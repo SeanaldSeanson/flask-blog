@@ -1,7 +1,13 @@
 from app import app
 from markdown import markdown
-from flask import render_template_string
+from flask import render_template_string, request, session
 from app.blog_helpers import render_markdown
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        #TODO: process request.values as necessary
+        pass
 
 # generic page
 @app.route("/<view_name>")
