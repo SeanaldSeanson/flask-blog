@@ -1,5 +1,16 @@
 <form method="post">
     <p>Username: <input type=text name=username></p>
-    <p>Password: <input type=text name=password></p>
+    <p>Password: <input id="passwordField" type=password name=password><input type=checkbox onclick=toggleShowPass()>Show Password</p>
     <p><input type=submit value=Login></p>
 </form>
+<script>
+    function toggleShowPass()
+    {
+        var x = document.getElementById("passwordField");
+        if(x.type === "password"){
+            x.type = "text";
+        } else{
+            x.type = "password";
+        }
+    }
+</script>
