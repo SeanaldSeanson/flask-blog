@@ -1,12 +1,13 @@
 from app import app
 from markdown import markdown
 from flask import render_template_string, request, session, redirect, url_for, escape, abort
-from app.blog_helpers import render_markdown, read_txt, sql_execute, is_admin, is_view
+from app.blog_helpers import render_markdown, read_txt, write_txt, backup_page, sql_execute, is_admin, is_view
 import os, sqlite3, secrets, hashlib
 
-# What happens if this is generated randomly here?
 app.secret_key = '`(7h_B/G PH:=IyT-$L^mE~5AR!Y|?/;i=2z1]ESGMKRtg-f'
 
+# if __name__ == '__main__':
+#     app.run(ssl_context='adhoc')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -33,19 +34,11 @@ def logout():
 def index():
     return render_page('index')
 
-@app.route('/blog/<view_name>')
-def render_blog(view_name):
-    render_page('blog/view_name')
-
 # generic page
 @app.route('/<view_name>')
-def render_page(view_name = '', head = read_txt('bar.html'), foot = ''):
+def render_page(view_name, head = read_txt('bar.html'), foot = ''):
     html = head
-    if is_view(view_name + '.md'):
-        print('load: ' + view_name + '.md')
-        html += '\n' + render_markdown(view_name + '.md')
-    elif is_view(view_name + '.html'):
-        print('load: ' + view_name + '.html')
+    if is_view(view_name + '.html'):
         html += '\n' + read_txt(view_name + '.html')
     else:
         abort(404)
@@ -56,15 +49,20 @@ def render_page(view_name = '', head = read_txt('bar.html'), foot = ''):
     return render_template_string(html, view_name = view_name, login = login)
 
 # edit generic page
-@app.route('/edit/<view_name>')
+@app.route('/edit/<view_name>', methods=['GET', 'POST'])
 def edit_page(view_name):
     if session and is_admin(session['username']):
-        html = render_page('edit')
-        if os.path.isfile(view_name + '.md'):
-            view_name += '.md'
-        elif os.path.isfile(view_name + '.html'):
+        if request.method == 'POST':
+            backup_page(view_name + '.html')
+            write_txt(request.form['editor'], view_name + '.html')
+            return redirect(url_for(view_name))
+
+        html = read_txt('edit.html')
+        if is_view(view_name + '.html'):
             view_name += '.html'
         else:
-            view_name = ''
+           abort(404)
         page = read_txt(view_name)
-        return render_template_string(html, view_name = view_name, page = page)
+        return render_template_string(html, edit_name = view_name, editor_content = page, preview = '')
+    else:
+        abort(403)

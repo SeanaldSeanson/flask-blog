@@ -1,4 +1,9 @@
-<h1>Edit Page: {{view_name}}</h1>
+<h1>Edit Page: {{edit_name}}</h1>
 <p>
-    <textarea>{{page}}</textarea>
+    <form method=post>
+        <p><textarea name=editor>{{editor_content}}</textarea></p>
+        <p>
+            <input type=submit value=Apply name=apply>
+        </p>
+    </form>
 </p>

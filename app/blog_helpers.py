@@ -11,6 +11,17 @@ def read_txt(file_name, dir_path = 'app/views'):
         txt = txt_file.read()
     return txt
 
+def write_txt(content, file_name, dir_path = 'app/views'):
+    with open(os.path.join(dir_path, file_name), 'w') as txt_file:
+        txt_file.write(content)
+
+def backup_page(file_name, dir_path = 'app/views', backup_name = ''):
+    if backup_name == '':
+        backup_name = file_name + '.bak'
+    with open(os.path.join(dir_path, file_name)) as old_file:
+        with open(os.path.join(dir_path, backup_name), 'w') as backup:
+            backup.write(old_file.read())
+
 def sql_execute(sql, *parameters):
     return sqlite3.connect('blog.db').cursor().execute(sql, parameters).fetchall()
 
