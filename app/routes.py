@@ -3,6 +3,7 @@ from markdown import markdown
 from flask import render_template_string, request, session, redirect, url_for, escape, abort
 from app.blog_helpers import render_markdown, read_txt, write_txt, backup_page, sql_execute, is_admin, is_view, fill_page, login_text
 from glob import glob
+from pathlib import PurePath
 import os, sqlite3, secrets, hashlib
 app.secret_key = '`(7h_B/G PH:=IyT-$L^mE~5AR!Y|?/;i=2z1]ESGMKRtg-f'
 
@@ -64,11 +65,10 @@ def edit_page(view_name):
 
 @app.route('/all')
 def all():
-    html = ''
-    view_list = glob(os.path.normpath('app/views') + '*.html')
-    view_list = ['index', 'about', 'contact']
+    html = read_txt('all.html')
+    view_list = glob(os.path.normpath('app/views/*.html'))
     for p in view_list:
-        html += '<p>' + p + '</p>\n'
+        html += '<p>' + PurePath(p).stem + '</p>\n'
     html = fill_page(html)
     print(html)
     return render_template_string(html, view_name = 'all', login = login_text())
