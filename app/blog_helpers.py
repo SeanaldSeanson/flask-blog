@@ -1,3 +1,4 @@
+from flask import session
 from markdown import markdown
 import os, sqlite3
 
@@ -31,9 +32,15 @@ def is_admin(user):
     return False
 
 def is_view(view_name = '', dir_path = 'app/views'):
-    print(view_name)
-    print(os.path.join(dir_path, os.path.normpath(view_name)))
     if os.path.isfile(os.path.join(dir_path, os.path.normpath(view_name))):
         return True
-    else:
-        return False
+    return False
+
+def fill_page(html, head = read_txt('bar.html', 'app/views/parts'), foot=''):
+    html = head + '\n' + html + '\n' + foot
+    return html
+
+def login_text():
+    if session['username'] != '':
+        return 'Logged in as: ' + session['username']
+    return 'Not logged in.'

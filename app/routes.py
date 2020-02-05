@@ -1,9 +1,9 @@
 from app import app
 from markdown import markdown
 from flask import render_template_string, request, session, redirect, url_for, escape, abort
-from app.blog_helpers import render_markdown, read_txt, write_txt, backup_page, sql_execute, is_admin, is_view
+from app.blog_helpers import render_markdown, read_txt, write_txt, backup_page, sql_execute, is_admin, is_view, fill_page, login_text
+from glob import glob
 import os, sqlite3, secrets, hashlib
-
 app.secret_key = '`(7h_B/G PH:=IyT-$L^mE~5AR!Y|?/;i=2z1]ESGMKRtg-f'
 
 # if __name__ == '__main__':
@@ -20,7 +20,7 @@ def login():
             session['username'] = request.form['username']
             return redirect(url_for('index'))
         else:
-            return render_page('login', foot='\n<p><font color="red">invalid credentials</font></p>')
+            return render_page('login', foot='<p>Invalid Credentials</p>')
 
     return render_page('login')
 
@@ -36,17 +36,12 @@ def index():
 
 # generic page
 @app.route('/<view_name>')
-def render_page(view_name, head = read_txt('bar.html'), foot = ''):
-    html = head
+def render_page(view_name, head = read_txt('bar.html', dir_path='app/views/parts'), foot=''):
     if is_view(view_name + '.html'):
-        html += '\n' + read_txt(view_name + '.html')
+        html = read_txt(view_name + '.html')
     else:
         abort(404)
-    html += '\n' + foot
-    login = 'Not logged in.'
-    if session:
-        login = 'Logged in as: ' + session['username']
-    return render_template_string(html, view_name = view_name, login = login)
+    return render_template_string(fill_page(html, head, foot), view_name = view_name, login = login_text())
 
 # edit generic page
 @app.route('/edit/<view_name>', methods=['GET', 'POST'])
@@ -66,3 +61,14 @@ def edit_page(view_name):
         return render_template_string(html, edit_name = view_name, editor_content = page, preview = '')
     else:
         abort(403)
+
+@app.route('/all')
+def all():
+    html = ''
+    view_list = glob(os.path.normpath('app/views') + '*.html')
+    view_list = ['index', 'about', 'contact']
+    for p in view_list:
+        html += '<p>' + p + '</p>\n'
+    html = fill_page(html)
+    print(html)
+    return render_template_string(html, view_name = 'all', login = login_text())

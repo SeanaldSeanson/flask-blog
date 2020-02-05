@@ -1,9 +1,18 @@
 <h1>Edit Page: {{edit_name}}</h1>
 <p>
+
     <form method=post>
-        <p><textarea name=editor>{{editor_content}}</textarea></p>
+        <p><textarea id=page_editor name=editor>{{editor_content}}</textarea></p>
         <p>
             <input type=submit value=Apply name=apply>
         </p>
     </form>
 </p>
+
+<script>
+    window.addEventListener('resize', function(event){
+        // document.getElementById('page_editor').rows = $(window).width();
+        // document.getElementById('page_editor').cols = $(window).height();
+        console.log('window resized');
+    })
+</script>
