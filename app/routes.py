@@ -76,33 +76,30 @@ def all():
 def chess():
     html = read_txt('chess.html')
     html = fill_page(html)
-    active = ''
-    pending = ''
     if session:
 
         html += '<p><a href=/chess/new>Start Game</a></p>'
 
-        html += '<h2>Active Games</h2>{{active}}'
+        html += '<h2>Active Games</h2>'
         active_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=1', (session['username'], session['username']))
 
         if len(active_games) > 0:
             for g in active_games:
-                active += '<p>' + g[0] + ': ' + g[1] + ' v. ' + g[2] + '</p>'
+                html += '<p><a href=/chess/game/g/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2] + '</a></p>'
         else:
-            active = 'No active games.'
+            html += 'No active games.'
         
-        html += '<h2>Pending Games</h2>{{pending}}'
+        html += '\n<h2>Pending Games</h2>'
         pending_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=0', (session['username'], session['username']))
         if len(pending_games) > 0:
             for g in pending_games:
-                accept_link = '<a href=/games/' + str(g[0]) + '/accept' + '>accept</a>'
-                pending += str(g[0]) + ': ' + g[1] + ' v. ' + g[2] + accept_link
+                html += '<p><a href=/chess/game/g/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2]
         else:
-            pending = 'No pending games.'
+            html += 'No pending games.'
     else:
         html += '<p>You must log in to play chess.</p>'
     
-    return render_template_string(html, view_name='chess', login = login_text(), active=active, pending=pending)
+    return render_template_string(html, view_name='chess', login = login_text())
 
 @app.route('/chess/new', methods=['GET', 'POST'])
 def chess_new():
@@ -116,17 +113,29 @@ def chess_new():
     else:
         abort(403)
 
-@app.route('/chess/<game>')
-def chess_game():
-    pass
-
-
-# @app.route('/games')
-# def game_list():
-    # return ''
-# 
-# @app.route('/games/<path:path>')
-# def send_game_file(path):
-    # return send_from_directory('../games', path, as_attachment=False)
-    # with open('games/' + path) as file:
-        # return file.read()
+@app.route('/chess/game/<game_id>')
+def chess_game(game_id):
+    player1 = ''
+    player2 = ''
+    game_record = sql_query('SELECT * FROM chessGames WHERE id=? AND (player1=? OR player2=?', game_id, session['username'], session['username'])
+    if len(game_record) == 1:
+        game_record = game_record[0]
+        player1 = game_record[1]
+        player2 = game_record[2]
+        if session:
+            html = read_txt('chess_game.html')
+            if game_record[3]:
+                # go to gameplay screen
+                pass
+            else:
+                if session['username'] == player2:
+                    html += read_txt('chess_accept_form.html', dir_path='app/views/parts')
+                elif():
+                    html += '<p>{{player2}} has not accepted this game yet.</p>'
+        else:
+            # TODO: If public game, show board, else, go away.
+            html += '<p>You do not have access to this game.</p>'
+    else:
+        html += '<p>Game does not exist.</p>'
+    html = fill_page(html)
+    return render_template_string(html, game_id=game_id, player1=player1, player2=player2)
