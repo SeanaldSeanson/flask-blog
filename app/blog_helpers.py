@@ -23,11 +23,20 @@ def backup_page(file_name, dir_path = 'app/views', backup_name = ''):
         with open(os.path.join(dir_path, backup_name), 'w') as backup:
             backup.write(old_file.read())
 
+def sql_query(sql, *parameters):
+    sql = sqlite3.connect('blog.db')
+    query = sql.cursor().execute(sql, parameters).fetchall()
+    sql.close()
+    return query
+
 def sql_execute(sql, *parameters):
-    return sqlite3.connect('blog.db').cursor().execute(sql, parameters).fetchall()
+    sql = sqlite3.connect('blog.db')
+    sql.cursor().execute(sql, parameters)
+    sql.commit()
+    sql.close()
 
 def is_admin(user):
-    if sql_execute('SELECT admin FROM users WHERE name=?', user)[0][0]:
+    if sql_query('SELECT admin FROM users WHERE name=?', user)[0][0]:
         return True
     return False
 
@@ -41,6 +50,6 @@ def fill_page(html, head = read_txt('bar.html', 'app/views/parts'), foot=''):
     return html
 
 def login_text():
-    if session['username'] != '':
+    if session and session['username'] != '':
         return 'Logged in as: ' + session['username']
     return 'Not logged in.'
