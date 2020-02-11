@@ -24,16 +24,16 @@ def backup_page(file_name, dir_path = 'app/views', backup_name = ''):
             backup.write(old_file.read())
 
 def sql_query(sql, *parameters):
-    sql = sqlite3.connect('blog.db')
-    query = sql.cursor().execute(sql, parameters).fetchall()
-    sql.close()
+    conn = sqlite3.connect('blog.db')
+    query = conn.cursor().execute(sql, parameters).fetchall()
+    conn.close()
     return query
 
 def sql_execute(sql, *parameters):
-    sql = sqlite3.connect('blog.db')
-    sql.cursor().execute(sql, parameters)
-    sql.commit()
-    sql.close()
+    conn = sqlite3.connect('blog.db')
+    conn.cursor().execute(sql, parameters)
+    conn.commit()
+    conn.close()
 
 def is_admin(user):
     if sql_query('SELECT admin FROM users WHERE name=?', user)[0][0]:

@@ -2,6 +2,7 @@ from app import app
 from markdown import markdown
 from flask import render_template_string, request, session, redirect, url_for, escape, abort, send_from_directory, send_file
 from app.blog_helpers import render_markdown, read_txt, write_txt, backup_page, is_admin, is_view, fill_page, login_text, sql_query, sql_execute
+from app.chess_helpers import unpack_move, build_board
 from glob import glob
 from pathlib import PurePath
 import os, sqlite3, secrets, hashlib
@@ -15,14 +16,15 @@ if __name__ == '__main__':
 def login():
     if request.method == 'POST':
         # Get user record from SQLite database user.db
-        udata = sql_query('SELECT * FROM users WHERE name=?', (request.form['username'],))
+        print(request.form['username'])
+        udata = sql_query('SELECT * FROM users WHERE name=?', request.form['username'])
 
         # Check that 1 matching record was found AND check hash from db against hash of salt + provided password
         if len(udata) == 1 and udata[0][3] == hashlib.sha256((udata[0][2] + request.form['password']).encode()).hexdigest():
             session['username'] = request.form['username']
             return redirect(url_for('index'))
         else:
-            return render_page('login', foot='<p>Invalid Credentials</p>')
+            return render_page('login', foot='<p><font> color=red>Invalid Credentials</font></p>')
 
     return render_page('login')
 
@@ -81,19 +83,19 @@ def chess():
         html += '<p><a href=/chess/new>Start Game</a></p>'
 
         html += '<h2>Active Games</h2>'
-        active_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=1', (session['username'], session['username']))
+        active_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=1', session['username'], session['username'])
 
         if len(active_games) > 0:
             for g in active_games:
-                html += '<p><a href=/chess/game/g/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2] + '</a></p>'
+                html += '<p><a href=/chess/game/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2] + '</a></p>'
         else:
             html += 'No active games.'
         
         html += '\n<h2>Pending Games</h2>'
-        pending_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=0', (session['username'], session['username']))
+        pending_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=0', session['username'], session['username'])
         if len(pending_games) > 0:
             for g in pending_games:
-                html += '<p><a href=/chess/game/g/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2]
+                html += '<p><a href=/chess/accept/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2]
         else:
             html += 'No pending games.'
     else:
@@ -113,29 +115,49 @@ def chess_new():
     else:
         abort(403)
 
-@app.route('/chess/game/<game_id>')
+@app.route('/chess/game/<game_id>', methods=['GET', 'POST'])
 def chess_game(game_id):
     player1 = ''
     player2 = ''
-    game_record = sql_query('SELECT * FROM chessGames WHERE id=? AND (player1=? OR player2=?', game_id, session['username'], session['username'])
+    board = ''
+    game_record = sql_query('SELECT * FROM chessGames WHERE id=?', game_id)
+    html = read_txt('chess_game.html')
     if len(game_record) == 1:
         game_record = game_record[0]
         player1 = game_record[1]
         player2 = game_record[2]
+        board = build_board(game_record[0])
         if session:
-            html = read_txt('chess_game.html')
             if game_record[3]:
-                # go to gameplay screen
-                pass
+                # Game is started.
+                if request.method == 'POST':
+                    # Process submitted move.
+                    move = unpack_move(request.form['move'])
+                    if move:
+                        submit_move()
+                        return redirect(url_for('chess/game/' + game_id))
+                    else:
+                        html += '<p><font color=red>Invalid move.</font></p>'
             else:
+                html += '<p>This game has not started yet.</p>'
                 if session['username'] == player2:
-                    html += read_txt('chess_accept_form.html', dir_path='app/views/parts')
-                elif():
-                    html += '<p>{{player2}} has not accepted this game yet.</p>'
+                    html += '<p><a href=/chess/accept/' + game_id + '>Accept</a></p>'
         else:
-            # TODO: If public game, show board, else, go away.
-            html += '<p>You do not have access to this game.</p>'
+            if game_record[4]:
+                pass # Is public game
+            else:
+                html += '<p>You do not have access to this game.</p>'
     else:
         html += '<p>Game does not exist.</p>'
     html = fill_page(html)
-    return render_template_string(html, game_id=game_id, player1=player1, player2=player2)
+    return render_template_string(html, game_id=game_id, player1=player1, player2=player2, board=board)
+
+@app.route('/chess/accept/<game_id>', methods=['POST', 'GET'])
+def chess_accept(game_id):
+    if session:
+        game_record = sql_query('SELECT * FROM chessGames WHERE id=?', game_id)[0]
+        if game_record[2] == session['username']:
+            sql_execute('UPDATE chessGames SET start=1 WHERE id=?', game_id)
+            return redirect(url_for('chess'))
+        else:
+            return redirect(url_for('chess'))

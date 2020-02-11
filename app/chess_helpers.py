@@ -2,6 +2,19 @@ from flask import session
 import os, sqlite3, re
 from app.blog_helpers import sql_execute, sql_query
 
+wK = 'N\{WHITE CHESS KING}'
+wQ = 'N\{WHITE CHESS QUEEN}'
+wR = 'N\{WHITE CHESS ROOK}'
+wB = 'N\{WHITE CHESS BISHOP}'
+wN = 'N\{WHITE CHESS KNIGHT}'
+wP = 'N\{WHITE CHESS PAWN}'
+bK = 'N\{BLACK CHESS KING}'
+bQ = 'N\{BLACK CHESS QUEEN}'
+bR = 'N\{BLACK CHESS ROOK}'
+bB = 'N\{BLACK CHESS BISHOP'
+bN = 'N\{BLACK CHESS KNIGHT}'
+bP = 'N\{BLACK CHESS PAWN}'
+
 def is_valid_move_syntax(move):
     move_pattern = re.compile('[a-zA-Z][0-8][ ,]+[a-zA-Z][0-8]')
     if move_pattern.match(move):
@@ -22,7 +35,9 @@ def build_board_txt(moves):
     for record in moves:
         pass
 
-def board_dict(moves):
+def board_arr(moves):
     moves = sql_query('SELECT * FROM chessMoves WHERE gameId=?', game_id)
+
+    board = [bR,bK,b
     for record in moves:
-        get
+        
