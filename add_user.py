@@ -31,5 +31,6 @@ try:
 except sqlite3.IntegrityError as e:
     print('Invalid database input: ' + str(e))
 
+conn.commit()
 conn.close()
 exit(0)
