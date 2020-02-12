@@ -2,7 +2,7 @@ from app import app
 from markdown import markdown
 from flask import render_template_string, request, session, redirect, url_for, escape, abort, send_from_directory, send_file
 from app.blog_helpers import render_markdown, read_txt, write_txt, backup_page, is_admin, is_view, fill_page, login_text, sql_query, sql_execute
-from app.chess_helpers import unpack_move, build_board
+from app.chess_helpers import is_valid_move_syntax, submit_move, board_txt
 from glob import glob
 from pathlib import PurePath
 import os, sqlite3, secrets, hashlib
@@ -126,18 +126,20 @@ def chess_game(game_id):
         game_record = game_record[0]
         player1 = game_record[1]
         player2 = game_record[2]
-        board = build_board(game_record[0])
+        board = board_txt(game_id=0)
         if session:
             if game_record[3]:
                 # Game is started.
                 if request.method == 'POST':
                     # Process submitted move.
-                    move = unpack_move(request.form['move'])
-                    if move:
-                        submit_move()
-                        return redirect(url_for('chess/game/' + game_id))
+                    move = request.form['move']
+                    if is_valid_move_syntax(move):
+                        if submit_move(move, game_id):
+                            return redirect(url_for('chess/' + game_id))
+                        else:
+                            html += '<p><font color=red>Invalid move.</font></p>'
                     else:
-                        html += '<p><font color=red>Invalid move.</font></p>'
+                        html += '<p><font color=red>Invalid move syntax.</font></p>'
             else:
                 html += '<p>This game has not started yet.</p>'
                 if session['username'] == player2:
