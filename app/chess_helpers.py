@@ -110,7 +110,6 @@ def board_txt(game_id):
             txt += '| ' + j + ' '
         txt += '|\n'
     txt += row_line
-
     return txt
 
 def get_valid_moves(board, startX, startY):
@@ -135,18 +134,14 @@ def get_valid_moves(board, startX, startY):
                     can_castle = False
             if can_castle and piece_type(board[startY][0]) == 'R':
                 moves.append((0, startY))
-        
-        return moves
     if ptype == 'Q':
         for dirX in range(-1, 2):
             for dirY in range(-1, 2):
                 moves += trace_path(board, startX, startY, dirX, dirY)
-        return moves
     if ptype == 'B':
         for dirX in [-1, 1]:
             for dirY in [-1, 1]:
                 moves += trace_path(board, startX, startY, dirX, dirY)
-        return moves
     if ptype == 'N':
         if startX + 2 < 7:
             if startY + 1 < 7:
@@ -168,11 +163,9 @@ def get_valid_moves(board, startX, startY):
                 moves.append((startX + 1, startY - 2))
             if startX - 1 > 0:
                 moves.append((startX - 1, startY - 2))
-        return moves
     if ptype == 'R':
         for dirX in [-1, 1]:
             moves += trace_path(board, startX, startY, dirX, 0)
         for dirY in [-1, 1]:
             moves += trace_path(board, startX, startY, dirX, 0)
-        return moves
     return moves

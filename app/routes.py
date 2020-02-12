@@ -70,7 +70,7 @@ def all():
     html = read_txt('all.html')
     view_list = glob(os.path.normpath('app/views/*.html'))
     for p in view_list:
-        html += '<p>' + PurePath(p).stem + '</p>\n'
+        html += '<p><a href=/' + PurePath(p).stem + '>' + PurePath(p).stem + '</a></p>\n'
     html = fill_page(html)
     return render_template_string(html, view_name = 'all', login = login_text())
 
@@ -121,7 +121,7 @@ def chess_game(game_id):
     player2 = ''
     board = ''
     game_record = sql_query('SELECT * FROM chessGames WHERE id=?', game_id)
-    html = read_txt('chess_game.html')
+    html = read_txt('chess_game.html', dir_path='app/views/parts')
     if len(game_record) == 1:
         game_record = game_record[0]
         player1 = game_record[1]
