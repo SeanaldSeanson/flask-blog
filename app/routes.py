@@ -17,11 +17,12 @@ def login():
     if request.method == 'POST':
         # Get user record from SQLite database user.db
         print(request.form['username'])
-        udata = sql_query('SELECT * FROM users WHERE name=?', request.form['username'])
+        udata = sql_query('SELECT * FROM users WHERE name=?', request.form['username'])[0]
 
-        # Check that 1 matching record was found AND check hash from db against hash of salt + provided password
-        if len(udata) == 1 and udata[0][3] == hashlib.sha256((udata[0][2] + request.form['password']).encode()).hexdigest():
+        # Check hash from db against hash of salt + provided password
+        if udata[3] == hashlib.sha256((udata[2] + request.form['password']).encode()).hexdigest():
             session['username'] = request.form['username']
+            session['uid'] = udata[0]
             return redirect(url_for('index'))
         else:
             return render_page('login', foot='<p><font> color=red>Invalid Credentials</font></p>')
@@ -49,7 +50,7 @@ def render_page(view_name, head = read_txt('bar.html', dir_path='app/views/parts
 # edit generic page
 @app.route('/edit/<view_name>', methods=['GET', 'POST'])
 def edit_page(view_name):
-    if session and is_admin(session['username']):
+    if session and is_admin(session['uid']):
         if request.method == 'POST':
             backup_page(view_name + '.html')
             write_txt(request.form['editor'], view_name + '.html')
@@ -92,7 +93,7 @@ def chess():
             html += 'No active games.'
         
         html += '\n<h2>Pending Games</h2>'
-        pending_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=0', session['username'], session['username'])
+        pending_games = sql_query('SELECT * FROM chessGames WHERE (player1=? OR player2=?) AND start=0', session['uid'], session['uid'])
         if len(pending_games) > 0:
             for g in pending_games:
                 html += '<p><a href=/chess/accept/' + str(g[0]) + '>' + str(g[0]) + ': ' + g[1] + ' v. ' + g[2]

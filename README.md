@@ -12,10 +12,22 @@ blog_helpers.py includes helper functions for common operations including queryi
 chess_helpers.py includes helper functions for the (not currently working) multiplayer chess feature of the site.
 
 ## Pages
-Most pages use the 'fill_page' function from blog_helpers.py to prepend the content of bar.
+Most pages use the 'fill_page' function from blog_helpers.py to prepend the content of bar.html, which defines a navigation bar to shown at the top of each page.
 
-## /all
+### /all
 For /all, the 'all' function reads all.html and populates a list of links to pages by searching for any html files in app/views/.
 
-## /<page_name>
+### /<page_name>
+For pages in app/views/ that do not have their own specified functions in routes.py, the 'render_page' function is used by default to load the html page if it exists, prepend the standard navigation bar, and return the page to the user. If their is no html document is app/views/, a 404 error will sent instead.
 
+### /edit/<page_name>
+If the user is currently logged in as a user with administrative priveleges, this route will allow the user to edit the page specified by page_name.
+
+### /chess
+This is the main page for the site's (not yet working) multiplayer chess system, which lists all in-progress and pending games for the currently logged in user, allowing the user to accept challenges issued by other players or choose an ongoing game to view.
+
+## Authentication
+user data is stored in the sqlite3 database file blog.db, in the 'users' table, with fields id (INTEGER), name (TEXT), salt (TEXT), hash (TEXT), and admin (INTEGER).
+id and name are both unique primary keys, to enforce unique usernames for logins but allowing for the potential to change a user's username. id autoincrements and does not need to be specified when adding a user.
+salt contains a random hexadecimal number that is prepended to the user's password to produce a the string from which the user's hash is derived, allowing two users to use the same password but still have different hashes. The hash field stores the SHA256 hash produced from this process.
+Currently, new users cannot be added through the website, but the script add_user.py is available to help with adding users to the database manually.

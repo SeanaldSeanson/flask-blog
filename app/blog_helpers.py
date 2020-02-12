@@ -35,8 +35,8 @@ def sql_execute(sql, *parameters):
     conn.commit()
     conn.close()
 
-def is_admin(user):
-    if sql_query('SELECT admin FROM users WHERE name=?', user)[0][0]:
+def is_admin(uid):
+    if sql_query('SELECT admin FROM users WHERE id=?', uid)[0][0]:
         return True
     return False
 
