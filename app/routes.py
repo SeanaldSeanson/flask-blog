@@ -6,6 +6,7 @@ from app.chess_helpers import is_valid_move_syntax, submit_move, board_txt
 from glob import glob
 from pathlib import PurePath
 import os, sqlite3, secrets, hashlib
+
 app.secret_key = '`(7h_B/G PH:=IyT-$L^mE~5AR!Y|?/;i=2z1]ESGMKRtg-f'
 
 if __name__ == '__main__':

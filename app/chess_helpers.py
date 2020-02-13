@@ -2,6 +2,7 @@ from flask import session
 import os, sqlite3, re
 from app.blog_helpers import sql_execute, sql_query
 
+# Unicode chess piece characters.
 wK = '\u2654'
 wQ = '\u2655'
 wR = '\u2656'
@@ -15,45 +16,50 @@ bB = '\u265D'
 bN = '\u265E'
 bP = '\u265F'
 
+# Verifies that the move string consists of a valid start point and end point,
+# separated by at least one space or comma separator, with each point
+# represented by a letter and a number.
 def is_valid_move_syntax(move):
     move_pattern = re.compile('[a-zA-Z][0-8][ ,]+[a-zA-Z][0-8]')
     if move_pattern.match(move):
         return True
     return False
 
-def is_valid_move(move, game_id):
-    move = unpack_move(move)
+# Assuming valid move syntax, determine if the desired move is valid.
+def is_valid_move(startX, startY, endX, endY, game_id):
     board = build_board(game_id)
-    valid_moves = get_valid_moves(board, move[0][0], move[0][1])
+    valid_moves = get_valid_moves(board, startX, startY)
     for i in valid_moves:
-        if i == (move[1][0], move[1][1]):
+        if i == (endX, endY):
             return True
     return False
         
+# Assuming valid move syntax, unpacks move string into a tuple containing
+# the starting coordinates, then the ending coordinates.
 def unpack_move(move):
     startX = int(move[:1].upper()) - 65
     startY = int(move[:2].upper()) - 65
     endX = int(move[-1:].upper()) - 65
     endY = int(move[-2:].upper()) - 65
-    return ((startX, startY), (endX, endY))
+    return (startX, startY, endX, endY)
 
+# Assuming valid move syntax, check if the move string is valid and add the
+# desired move to the database. Return True if the move is successfully
+# submitted and False otherwise.
 def submit_move(move, game_id):
     turn = sql_query('SELECT TOP 1 turn FROM chessMoves WHERE gameId=? ORDER BY turn DESC)', game_id).fetchone()[0]
     turn += 1
 
-    if is_valid_move(move, game_id):
-        pass # insert move
+    startX, startY, endX, endY = unpack_move(move)
+    if is_valid_move(startX, startY, endX, endY, game_id):
+        sql_execute('INSERT INTO chessMoves (gameId, turn, startX, startY, endX, endY) VALUES (?,?,?,?,?,?', game_id, turn, startX, startY, endX, endY)
+        return True
+    return False
 
 def get_moves(game_id):
     return sql_query('SELECT * FROM chessMoves WHERE gameId=? ORDER BY turn ASC', game_id)
 
-# def build_board_txt(moves):
-#     return 'insert board here'
-#     game_record = sql_query('SELECT * FROM chessGames WHERE id=?', game_id)[0]
-#     moves = sql_query('SELECT * FROM chessMoves WHERE gameId=?', game_id)
-#     for record in moves:
-#         pass
-
+# Return a 2-D array representing the board for the supplied game_id
 def build_board(game_id):
     # Initialize board
     board = []
@@ -75,6 +81,7 @@ def build_board(game_id):
     
     return board
 
+# Determine the type of piece represented by the provided value.
 def piece_type(p):
     if p == wK or p == bK:
         return 'K'

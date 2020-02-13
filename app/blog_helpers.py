@@ -1,6 +1,6 @@
 from flask import session
 from markdown import markdown
-import os, sqlite3
+import os, sqlite3, secrets, hashlib
 
 def render_markdown(file_name, dir_path = 'app/views'):
     return markdown(read_txt(file_name, dir_path))
@@ -53,3 +53,9 @@ def login_text():
     if session and session['username'] != '':
         return 'Logged in as: ' + session['username']
     return 'Not logged in.'
+
+def add_user(name, password, admin=0):
+    newSalt = secrets.token_hex(16)
+    newHash = hashlib.sha256((newSalt + password).encode()).hexdigest()
+
+    sql_execute('INSERT INTO users (name, salt, hash) VALUES (?,?,?)', name, newSalt, newHash)
