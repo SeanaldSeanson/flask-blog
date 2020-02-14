@@ -59,6 +59,14 @@ def submit_move(move, game_id):
 def get_moves(game_id):
     return sql_query('SELECT * FROM chessMoves WHERE gameId=? ORDER BY turn ASC', game_id)
 
+def player_turn(game_id):
+    turn = get_moves(game_id)[0][2]
+    player1, player2 = sql_query('SELECT (player1, player2) FROM chessGames WHERE gameId=?', game_id)[0]
+    if turn % 2 == 0:
+        return player1
+    else:
+        return player2
+
 # Return a 2-D array representing the board for the supplied game_id
 def build_board(game_id):
     # Initialize board

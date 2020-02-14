@@ -50,8 +50,8 @@ def fill_page(html, head = read_txt('bar.html', 'app/views/parts'), foot=''):
     return html
 
 def login_text():
-    if session and session['username'] != '':
-        return 'Logged in as: ' + session['username']
+    if session:
+        return 'Logged in as: ' + get_uname(session['uid'])
     return 'Not logged in.'
 
 def add_user(name, password, admin=0):
@@ -59,3 +59,9 @@ def add_user(name, password, admin=0):
     newHash = hashlib.sha256((newSalt + password).encode()).hexdigest()
 
     sql_execute('INSERT INTO users (name, salt, hash) VALUES (?,?,?)', name, newSalt, newHash)
+
+def get_uname(uid):
+    return sql_query('SELECT name FROM users WHERE id=?', uid)[0][0]
+
+def get_uid(username):
+    return sql_query('SELECT id FROM users WHERE name=?', username)[0][0]
