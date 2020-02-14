@@ -2,7 +2,6 @@
 A basic Flask website, plus multiplayer chess maybe.
 
 # Design
-
 ## Overview
 The main pages are stored in app/views and are each modified if necessary by a corresponding function in routes.py.
 The app/views/parts directory stores html documents which are meant to be used as components of other pages, or that are not associated with one particular route.
@@ -25,6 +24,15 @@ If the user is currently logged in as a user with administrative priveleges, thi
 
 ### /chess
 This is the main page for the site's (not yet working) multiplayer chess system, which lists all in-progress and pending games for the currently logged in user, allowing the user to accept challenges issued by other players or choose an ongoing game to view.
+
+### /chess/<game_id>
+This route will load the chess game specified by game_id, an integer identifier.
+
+### /chess/accept/<game_id>
+This route will allow a user to accept an invitation to a chess match, marking the game as started in the database.
+
+### /chess/new
+This route will allow a user to issue a challenge to another user, adding a pending game to the database.
 
 ## Authentication
 user data is stored in the sqlite3 database file blog.db, in the 'users' table, with fields id (INTEGER), name (TEXT), salt (TEXT), hash (TEXT), and admin (INTEGER).

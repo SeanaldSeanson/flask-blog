@@ -117,14 +117,14 @@ def trace_path(board, startX, startY, dirX, dirY, max_len=8):
 
 def board_txt(game_id):
     board = build_board(game_id)
-    row_line = '---------------------------------\n'
+    row_line = ' ---------------------------------\n'
     txt = ''
     for i in range(len(board)):
-        txt += row_line
+        txt += row_line + str(i)
         for j in board[i]:
             txt += '| ' + j + ' '
         txt += '|\n'
-    txt += row_line
+    txt += row_line + '   A   B   C   D   E   F   G   H'
     return txt
 
 def get_valid_moves(board, startX, startY):

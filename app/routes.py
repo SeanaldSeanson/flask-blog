@@ -123,12 +123,15 @@ def chess_game(game_id):
     player1 = ''
     player2 = ''
     board = ''
-    game_record = sql_query('SELECT * FROM chessGames WHERE id=?', game_id)
     html = read_txt('chess_game.html', dir_path='app/views/parts')
+
+    game_record = sql_query('SELECT * FROM chessGames WHERE id=?', game_id)
     if len(game_record) == 1:
+        game_record = game_record[0]
         player1 = game_record[1]
         player2 = game_record[2]
         board = board_txt(game_id)
+        html += '<code><PRE>' + board.replace('\n', '<br/>') + '</PRE></code>'
         if session:
             if game_record[3]:
                 # Game is started.
