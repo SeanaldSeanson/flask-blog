@@ -1,5 +1,5 @@
 # Flask website for CS 232
-A basic Flask website, plus multiplayer chess maybe.
+A basic Flask website, plus multiplayer chess.
 
 # Design
 ## Overview
@@ -8,7 +8,7 @@ The app/views/parts directory stores html documents which are meant to be used a
 
 blog_helpers.py includes helper functions for common operations including querying and modifying the 'blog.db' sqlite3 database, reading and writing text files, and generating or modifying page content.
 
-chess_helpers.py includes helper functions for the (not currently working) multiplayer chess feature of the site.
+chess_helpers.py includes helper functions for the (not currently fully working) multiplayer chess feature of the site.
 
 ## Pages
 Most pages use the 'fill_page' function from blog_helpers.py to prepend the content of bar.html, which defines a navigation bar to shown at the top of each page.
@@ -20,10 +20,10 @@ For /all, the 'all' function reads all.html and populates a list of links to pag
 For pages in app/views/ that do not have their own specified functions in routes.py, the 'render_page' function is used by default to load the html page if it exists, prepend the standard navigation bar, and return the page to the user. If their is no html document is app/views/, a 404 error will sent instead.
 
 ### /edit/<page_name>
-If the user is currently logged in as a user with administrative priveleges, this route will allow the user to edit the page specified by page_name.
+If the user is currently logged in as a user with administrative priveleges, this route will allow the user to edit the page specified by page_name. The page will be backed up with a .bak extension added to the original file name.
 
 ### /chess
-This is the main page for the site's (not yet working) multiplayer chess system, which lists all in-progress and pending games for the currently logged in user, allowing the user to accept challenges issued by other players or choose an ongoing game to view.
+This is the main page for the site's (not yet fully working) multiplayer chess system, which lists all in-progress and pending games for the currently logged in user, allowing the user to accept challenges issued by other players or choose an ongoing game to view.
 
 ### /chess/<game_id>
 This route will load the chess game specified by game_id, an integer identifier.
