@@ -1,4 +1,5 @@
 # Design Diary
+Application walkthrough: [here](walkthrough.gif)
 
 One particular struggle I had to deal with was understanding the session system in Flask. I hadn't initially realized how simply adding a value to the session object as I would with a dictionary would cause so much other work to be done in the background, so it took some research for me to grasp that well enough to be fully comfortable using sessions.
 
